@@ -1,12 +1,9 @@
-require("dotenv").config(); // Importar dotenv
+require("dotenv").config();
 const mongoose = require("mongoose");
 
 const conectarDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI, {  // Usar la variable de entorno
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
+        await mongoose.connect(process.env.MONGO_URI);
         console.log("MongoDB conectado ✅");
     } catch (error) {
         console.error("Error al conectar con MongoDB ❌", error);
@@ -15,4 +12,5 @@ const conectarDB = async () => {
 };
 
 module.exports = conectarDB;
+
 
