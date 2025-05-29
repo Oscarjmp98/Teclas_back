@@ -14,7 +14,13 @@ conectarDB();
 // Usar las rutas
 app.use("/api", teclaRoutes);
 
+// Ruta GET para verificar el despliegue
+app.get("/", (req, res) => {
+  res.send("🚀 Backend de Oscar (Teclas) desplegado y funcionando correctamente en Vercel! 🔥");
+});
+
 // Iniciar el servidor
 const PORT = 5000;
-app.listen(PORT, () => console.log(`🔥 Servidor corriendo en puerto ${PORT} 🔥`));
+app.listen(PORT, () => console.log(`🚀 Backend de Oscar (Teclas) corriendo en puerto ${PORT}. Desplegado en Vercel exitosamente! 🔥`));
+
 
