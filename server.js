@@ -1,40 +1,59 @@
-const express = require("express");
-//const conectarDB = require("./config/db");
-const mongoose = require('mongoose');
-const cors = require("cors");
-const teclaRoutes = require("./routes/api");
+const express = require("express")
+const mongoose = require("mongoose")
+const cors = require("cors")
+const Tecla = require("../models/Tecla")
 
 // Inicializar la aplicación
-const app = express();
-app.use(express.json());
-app.use(cors());
+const app = express()
+app.use(express.json())
+app.use(cors())
 
-// Conectar a MongoDB
-//conectarDB();
+// Conexión a MongoDB
+let isConnected = false
 
-// Conexión a MongoDB desde .env
-const mongoURI = process.env.MONGO_URI;
-const PORT = process.env.PORT || 3000;
+const connectToDatabase = async () => {
+  if (isConnected) return
 
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+    isConnected = true
+    console.log("✅ Conectado a MongoDB")
+  } catch (error) {
+    console.error("❌ Error al conectar a MongoDB:", error)
+    throw error
+  }
+}
+
+// Rutas API
+app.post("/api/registrar", async (req, res) => {
+  try {
+    await connectToDatabase()
+    const { tecla, fecha_hora } = req.body
+    const nuevaTecla = new Tecla({ tecla, fecha_hora })
+    await nuevaTecla.save()
+    res.json({ mensaje: "Tecla registrada con éxito ✅" })
+  } catch (error) {
+    res.status(500).json({ error: "Error al registrar tecla ❌" })
+  }
 })
-.then(() => console.log('✅ Conectado a MongoDB'))
-.catch((err) => console.error('❌ Error al conectar a MongoDB:', err));
 
-// Usar las rutas
-app.use("/api", teclaRoutes);
+app.get("/api/datos", async (req, res) => {
+  try {
+    await connectToDatabase()
+    const registros = await Tecla.find().sort({ fecha_hora: -1 })
+    res.json(registros)
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener los registros ❌" })
+  }
+})
 
-// Ruta GET para verificar el despliegue
+// Ruta principal
 app.get("/", (req, res) => {
-  res.send("🚀 Backend de Oscar (Teclas) desplegado y funcionando correctamente en Vercel! 🔥");
-});
+  res.send("🚀 Backend de Oscar (Teclas) desplegado y funcionando correctamente en Vercel! 🔥")
+})
 
-// Iniciar el servidor
-//const PORT = 5000;
-//app.listen(PORT, () => console.log(`🚀 Backend de Oscar (Teclas) corriendo en puerto ${PORT}. Desplegado en Vercel exitosamente! 🔥`));
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-});
-
+// Exportar la aplicación para serverless
+module.exports = app
